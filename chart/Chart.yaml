@@ -4,11 +4,11 @@ description: A Helm chart that deploys the Traefik ingress controller and Crowds
 type: application
 version: 0.1.0
 dependencies:
-- name: k3s-traefik
-  version: 0.1.0
-  repository: file://./charts/k3s-traefik
-  condition: traefik.deployment.enabled
 - name: k3s-crowdsec
   version: 0.1.0
   repository: file://./charts/k3s-crowdsec
   condition: crowdsec.enabled
+- name: k3s-traefik
+  version: 0.1.0
+  repository: file://./charts/k3s-traefik
+  condition: traefik.deployment.enabled
