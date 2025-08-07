@@ -12,7 +12,7 @@ spec:
     - name: redirect-to-https
     - name: default-headers
     {{- if .Values.middlewares.crowdsecBouncer.enabled }}{{- if .Values.middlewares.crowdsecBouncer.inDefaultChain }}
-    - name: crowdsec-bouncer
+    - name: bouncer
     {{- end }}{{- end }}
     {{- if .Values.middlewares.localOnlyAllowlist.enabled }}{{- if .Values.middlewares.localOnlyAllowlist.inDefaultChain }}
     - name: lan-only
