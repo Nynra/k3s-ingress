@@ -147,7 +147,7 @@ crowdsec:
 
     dashboard:
       # -- Enable Metabase Dashboard (by default disabled)
-      enabled: true
+      enabled: false
       # -- environment variables from metabase/metabase docker image
       # -- see https://www.metabase.com/docs/latest/configuring-metabase/environment-variables
       env: []
