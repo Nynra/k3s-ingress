@@ -24,7 +24,7 @@ crowdsec:
   tls:
     enabled: true
     bouncer:
-      secret: "{{ .Release.Name }}-bouncer-tls"
+      secret: "crowdsec-bouncer-tls"
       reflector:
         namespaces: ["traefik"]
 
