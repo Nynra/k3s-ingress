@@ -185,7 +185,7 @@ k3s-traefik:
     # Allowlist for local IPs to bypass the CrowdSec bouncer
     localOnlyAllowlist:
       enabled: true
-      inDefaultChain: true
+      inDefaultChain: false
       # Allowed local IP CIDRs
       localIpCIDRs:
         # Can also be restricted to certain subnets
