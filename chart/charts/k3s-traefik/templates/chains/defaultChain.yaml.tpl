@@ -2,6 +2,7 @@ apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: traefik-default-chain
+  namespace: {{ .Release.Namespace | quote }}
 spec:
   chain:
     middlewares:
