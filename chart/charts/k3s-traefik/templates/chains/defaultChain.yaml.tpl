@@ -9,7 +9,7 @@ spec:
     {{- if .Values.middlewares.rateLimiting.enabled }}{{- if .Values.middlewares.rateLimiting.inDefaultChain }}
     - name: ratelimit
     {{- end }}{{- end }}
-    - name: https-only
+    - name: redirect-to-https
     - name: default-headers
     {{- if .Values.middlewares.crowdsecBouncer.enabled }}{{- if .Values.middlewares.crowdsecBouncer.inDefaultChain }}
     - name: crowdsec-bouncer
