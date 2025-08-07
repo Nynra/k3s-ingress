@@ -56,10 +56,6 @@ middlewares:
   # Enable the non-default middlewares for Traefik
   enabled: true
 
-  # Annotations and labels to add to the middlewares
-  commonAnnotations: {}
-  commonLabels: {}
-
   # Enable the CrowdSec bouncer middleware
   crowdsecBouncer:
     enabled: true
@@ -69,10 +65,10 @@ middlewares:
     # Enable the local IP allowlist middleware
     enabled: true
 
-    # Allowed local IP CIDRs
-    localIpCIDRs:
-      # Can also be restricted to certain subnets
-      - 192.168.0.0/16 # 192.168.x.x
+  # Allowed local IP CIDRs
+  localIpCIDRs:
+    # Can also be restricted to certain subnets
+    - 192.168.0.0/16 # 192.168.x.x
 
   # Rate limiting middleware
   rateLimiting:
