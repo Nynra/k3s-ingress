@@ -158,13 +158,14 @@ traefik:
       # -- Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
       namespaces: [] # All namespaces
       # Might be needed to reference middlewares in other namespaces
-      # allowCrossNamespace: true
+      allowCrossNamespace: true
     kubernetesIngress:
       enabled: true
       allowExternalNameServices: true
       namespaces: [] # All namespaces
       publishedService:
         enabled: false
+      allowCrossNamespace: true
 
   rbac:
     enabled: true
