@@ -1,0 +1,10 @@
+apiVersion: v2
+name: k3s-crowdsec
+description: A Helm chart that deploys CrowdSec with external secrets for credentials.
+type: application
+version: 0.1.0
+dependencies:
+- name: crowdsec
+  version: "0.19.5"
+  repository: https://crowdsecurity.github.io/helm-charts
+  condition: crowdsec.enabled

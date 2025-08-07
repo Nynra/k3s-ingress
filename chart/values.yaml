@@ -1,0 +1,227 @@
+global:
+  commonLabels: {}
+  commonAnnotations: {}
+
+k3s-crowdsec:
+  enabled: true
+  externalSecret:
+    enabled: true
+    secretStore: "kubernetes"
+    secretStoreType: "ClusterSecretStore"
+    secretName: ""
+    properties:
+      csLapiSecret: "" 
+      registrationToken: ""
+      bouncerToken: ""
+      enrollKey: ""
+
+  crowdsec: 
+    config:
+      # -- To better understand stages in parsers, you can take a look at https://docs.crowdsec.net/docs/next/parsers/intro/
+      # Those files are only mounted in the agent pods
+      parsers:
+        s00-raw: {}
+        s01-parse: {}
+          # example-parser.yaml: |
+          #   filter: "evt.Line.Labels.type == 'myProgram'"
+          #   onsuccess: next_stage
+          #   ....
+        s02-enrich: {}
+      # -- to better understand how to write a scenario, you can take a look at https://docs.crowdsec.net/docs/next/scenarios/intro
+      # Those files are only mounted in the agent pods
+      scenarios: {}
+        # myScenario.yaml: |
+        #   type: trigger
+        #    name: myName/MyScenario
+        #    description: "Detect bruteforce on myService"
+        #    filter: "evt.Meta.log_type == 'auth_bf_log'"
+        #    ...
+      # -- to better understand how to write a postoverflow, you can take a look at (https://docs.crowdsec.net/docs/next/whitelist/create/#whitelist-in-postoverflows)
+      # Those files are only mounted in the agent pods
+      postoverflows:
+        s00-enrich: {}
+          # rdnsEnricher.yaml: |
+          #   ...
+        s01-whitelist: {}
+          # myRdnsWhitelist.yaml: |
+          #   ...
+
+      # -- Simulation configuration (https://docs.crowdsec.net/docs/next/scenarios/simulation/)
+      # This file is only mounted in the agent pods
+      simulation.yaml: ""
+        #  |
+        # simulation: false
+        # exclusions:
+        #  - crowdsecurity/ssh-bf
+      # This file is only mounted in the lapi pod
+      console.yaml: ""
+        #   |
+        # share_manual_decisions: true
+        # share_tainted: true
+        # share_custom: true
+      # -- Profiles configuration (https://docs.crowdsec.net/docs/next/profiles/format/#profile-configuration-example)
+      # This file is only mounted in the lapi pod
+      profiles.yaml: ""
+        #   |
+        #  name: default_ip_remediation
+        #  debug: true
+        #  filters:
+        #    - Alert.Remediation == true && Alert.GetScope() == "Ip"
+        #  ...
+
+      # -- General configuration (https://docs.crowdsec.net/docs/configuration/crowdsec_configuration/#configuration-example)
+      # This file is only mounted in the lapi pod
+      config.yaml.local: |
+        api:
+          server:
+            auto_registration: # Activate if not using TLS for authentication
+              enabled: true
+              token: "${REGISTRATION_TOKEN}" # /!\ Do not modify this variable (auto-generated and handled by the chart)
+              allowed_ranges: # /!\ Make sure to adapt to the pod IP ranges used by your cluster
+                - "127.0.0.1/32"
+                - "192.168.0.0/16"
+                - "10.0.0.0/8"
+                - "172.16.0.0/12"
+
+    lapi:
+      # Environment variables from crowdsecurity/crowdsec docker image
+      env:
+        - name: ENROLL_KEY
+          valueFrom: 
+            secretKeyRef:
+              name: crowdsec-credentials
+              key: enrollKey
+        - name: ENROLL_INSTANCE_NAME
+          value: k3s-cluster
+        - name: ENROLL_TAGS
+          value: "k3s linux test"
+        - name: BOUNCER_KEY_traefik
+          valueFrom:
+            secretKeyRef:
+              name: crowdsec-credentials
+              key: bouncerTokenKey
+        # If it's a test, we don't want to share signals with CrowdSec so disable the Online API.
+        - name: DISABLE_ONLINE_API
+          value: "true"
+        # When testing, allow bans on private networks
+        # - name: DISABLE_PARSERS
+        #   value: "crowdsecurity/whitelists"
+
+      # -- Enable service monitoring (exposes "metrics" port "6060" for Prometheus)
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: false
+        podMonitor:
+          enabled: false
+
+    agent:
+      # -- Specify each pod you want to process it logs (namespace, podName and program)
+      acquisition:
+        - namespace: traefik
+          podName: traefik-*
+          program: traefik
+      env:
+        - name: COLLECTIONS
+          value: "crowdsecurity/traefik"
+      
+      # -- Enable service monitoring (exposes "metrics" port "6060" for Prometheus)
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: false
+        podMonitor:
+          enabled: false
+
+  k3s-traefik:
+    enabled: true
+    dashboard:
+      # Enable the Traefik dashboard
+      enabled: true
+
+      # The URL to access the dashboard
+      ingressUrl: "traefik.example.com"
+
+      # The secret name for the TLS certificate used by the dashboard ingress
+      entrypoint: websecure
+      externalCert:
+        enabled: true
+
+        # The name of the secret in the secret store that contains the TLS certificate
+        secretName: "example-com-tls"
+
+        # Name and type of the secret store where the TLS certificate is stored
+        secretStore: "certs-vault"
+        secretStoreType: "ClusterSecretStore"
+    crowdsecCredentials: 
+      enabled: true
+
+      # Name of the secret in the external storage
+      secretName: "crowdsecCredentials"
+
+      # Name and type of the secret store where the TLS certificate is stored
+      secretStore: "kubernetes"
+      secretStoreType: "ClusterSecretStore"
+
+      properties:
+        bouncerToken: ""
+
+    middlewares:
+      # Enable the non-default middlewares for Traefik
+      enabled: true
+
+      # Annotations and labels to add to the middlewares
+      commonAnnotations: {}
+      commonLabels: {}
+
+      # Enable the CrowdSec bouncer middleware
+      crowdsecBouncer:
+        enabled: true
+        version: "v1.4.4"
+      
+      # Allowlist for local IPs to bypass the CrowdSec bouncer
+      localOnlyAllowlist:
+        enabled: true
+        # Allowed local IP CIDRs
+        localIpCIDRs:
+          # Can also be restricted to certain subnets
+          - 192.168.0.0/16 # 192.168.x.x
+
+      # Rate limiting middleware
+      rateLimiting:
+        enabled: true
+        average: 100
+        burst: 200
+        period: 1s
+
+    traefik:
+      deployment:
+        enabled: true
+      providers:
+        kubernetesCRD:
+          enabled: true
+          ingressClass: traefik-external
+          # -- Allows to reference ExternalName services in IngressRoute
+          allowExternalNameServices: true
+          # -- Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
+          namespaces: [] # All namespaces
+          # Might be needed to reference middlewares in other namespaces
+          # allowCrossNamespace: true
+        kubernetesIngress:
+          enabled: true
+          allowExternalNameServices: true
+          namespaces: [] # All namespaces
+          publishedService:
+            enabled: false
+
+      service:
+        enabled: true
+        spec:
+          loadBalancerIP: 192.168.0.50
+
+      metrics:
+        prometheus:
+          serviceMonitor:
+            enabled: false
+          prometheusRule:
+            enabled: false

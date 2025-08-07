@@ -1,0 +1,222 @@
+global: 
+  checkNewVersion: true
+  # -- Please take time to consider whether or not you wish to share anonymous data with us
+  # See https://doc.traefik.io/traefik/contributing/data-collection/
+  sendAnonymousUsage: false
+  
+  # Global labels and annotations for all resources in this chart
+  commonLabels: {}
+  commonAnnotations: {}
+
+# Enable the deployment of resources in this chart. If set to false only dependancies will
+# be installed
+enabled: true
+
+dashboard:
+  # Enable the Traefik dashboard
+  enabled: true
+
+  # The URL to access the dashboard
+  ingressUrl: "traefik.example.com"
+
+  # The secret name for the TLS certificate used by the dashboard ingress
+  entrypoint: websecure
+  externalCert:
+    # Enable the use of an external secret for the TLS certificate. If set to
+    # false the chart will assume a certificate with the certName is already in the 
+    # namespace
+    enabled: true
+
+    # The name of the secret in the secret store that contains the TLS certificate
+    secretName: "example-com-tls"
+
+    # Name and type of the secret store where the TLS certificate is stored
+    secretStore: "certs-vault"
+    secretStoreType: "ClusterSecretStore"
+
+crowdsecCredentials: 
+  # Enable the use of an external secret for CrowdSec credentials
+  # If set to false, the chart will assume a secret with the name secretName is
+  # already in the namespace
+  # and the values lapi.secrets.csLapiSecret and lapi.secrets.registrationToken
+  # will be used to create the secret
+  enabled: true
+
+  # Name of the secret in the external storage
+  secretName: "crowdsecCredentials"
+
+  # Name and type of the secret store where the TLS certificate is stored
+  secretStore: "kubernetes"
+  secretStoreType: "ClusterSecretStore"
+
+  properties:
+    bouncerToken: ""
+
+middlewares:
+  # Enable the non-default middlewares for Traefik
+  enabled: true
+
+  # Annotations and labels to add to the middlewares
+  commonAnnotations: {}
+  commonLabels: {}
+
+  # Enable the CrowdSec bouncer middleware
+  crowdsecBouncer:
+    enabled: true
+    version: "v1.4.4"
+  
+  # Allowlist for local IPs to bypass the CrowdSec bouncer
+  localOnlyAllowlist:
+    # Enable the local IP allowlist middleware
+    enabled: true
+
+    # Allowed local IP CIDRs
+    localIpCIDRs:
+      # Can also be restricted to certain subnets
+      - 192.168.0.0/16 # 192.168.x.x
+
+  # Rate limiting middleware
+  rateLimiting:
+    # Enable the rate limiting middleware
+    enabled: true
+
+    # Specify the rate limiting parameters
+    average: 100
+    burst: 200
+    period: 1s
+
+# Values for Traefik Helm chart
+traefik:
+  globalArguments:
+      - "--global.sendanonymoususage=false"
+      - "--global.checknewversion=false"
+
+  additionalArguments:
+    - "--serversTransport.insecureSkipVerify=true"
+    - "--log.level=INFO"
+    # Enable the CrowdSec bouncer plugin
+    - "--experimental.plugins.bouncer.moduleName=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+    - "--experimental.plugins.bouncer.version={{ .Values.middlewares.crowdsecBouncer.version }}"
+    - "--entrypoints.web.http.middlewares=traefik-bouncer@kubernetescrd"
+    - "--entrypoints.websecure.http.middlewares=traefik-bouncer@kubernetescrd"
+    - "--providers.kubernetescrd"
+
+    # Add the crowdsec bouncer
+    # - "--entrypoints.web.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
+    # - "--entrypoints.websecure.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
+
+  deployment:
+    enabled: true
+    replicas: 3
+    annotations: {}
+    podAnnotations: {}
+    additionalContainers: []
+    initContainers: []
+
+  volumes: 
+    # Make sure to reflect the certificate in the crowdsec configuration
+    - name: crowdsec-bouncer-tls
+      mountPath: /etc/traefik/certs/crowdsec-bouncer-tls
+      type: secret
+
+  # experimental: 
+  #   # Enable experimental plugins
+  #   plugins: 
+  #     enabled: true
+
+  ports:
+    web:
+      expose:
+        default: true
+      redirections:
+        entrypoint:
+          to: websecure
+          priority: 10
+    websecure:
+      expose:
+        default: true
+      http3:
+        enabled: true
+        advertisedPort: 443
+      tls:
+        enabled: true
+
+  ingressRoute:
+    dashboard:
+      enabled: false
+
+  providers:
+    kubernetesCRD:
+      enabled: true
+      ingressClass: traefik-external
+      # -- Allows to reference ExternalName services in IngressRoute
+      allowExternalNameServices: true
+      # -- Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
+      namespaces: [] # All namespaces
+      # Might be needed to reference middlewares in other namespaces
+      # allowCrossNamespace: true
+    kubernetesIngress:
+      enabled: true
+      allowExternalNameServices: true
+      namespaces: [] # All namespaces
+      publishedService:
+        enabled: false
+
+  rbac:
+    enabled: true
+
+  service:
+    enabled: true
+    type: LoadBalancer
+    annotations: {}
+    labels: {}
+    spec:
+      loadBalancerIP: 192.168.0.50
+    loadBalancerSourceRanges: []
+    externalIPs: []
+
+  logs: 
+    general:
+      level: "INFO"
+    access: 
+      enabled: true
+      format: "json"
+      filters:  # @schema additionalProperties: false
+        # -- Set statusCodes, to limit the access logs to requests with a status codes in the specified range
+        statuscodes: ""
+        # -- Set retryAttempts, to keep the access logs when at least one retry has happened
+        retryattempts: false
+        # -- Set minDuration, to keep access logs when requests take longer than the specified duration
+        minduration: ""
+      fields:
+        defaultMode: keep
+        names:
+          - "ClientAddr"
+          - "ClientUsername"
+          - "OriginAddr"
+          - "RequestMethod"
+          - "RequestPath"
+          - "RequestProtocol"
+          - "ResponseStatus"
+          - "ResponseSize"
+          - "UserAgent"
+        headers:
+          defaultMode: drop
+          names: {}
+  
+  metrics:
+    prometheus:
+      entryPoint: "metrics"
+      # -- Buckets for latency metrics. Default="0.1,0.3,1.2,5.0"
+      buckets: ""
+
+      serviceMonitor:
+        # -- Enable optional CR for Prometheus Operator. See EXAMPLES.md for more details.
+        enabled: false
+        additionalLabels: {}
+        namespace: ""
+      prometheusRule:
+        # -- Enable optional CR for Prometheus Operator. See EXAMPLES.md for more details.
+        enabled: false
+        additionalLabels: {}
+        namespace: ""

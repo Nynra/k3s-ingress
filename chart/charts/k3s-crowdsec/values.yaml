@@ -1,0 +1,208 @@
+global:
+  commonLabels: {}
+  commonAnnotations: {}
+
+enabled: true
+
+externalSecret:
+  enabled: true
+  secretStore: "kubernetes"
+  secretStoreType: "ClusterSecretStore"
+  secretName: ""
+  properties:
+    csLapiSecret: "" 
+    registrationToken: ""
+    bouncerToken: ""
+    enrollKey: ""
+
+# Values for the CrowdSec chart
+crowdsec:
+  enabled: true
+  # As we are running on k3s we use the containerd runtime
+  container_runtime: "containerd"
+
+  tls:
+    enabled: true
+    # bouncer:
+    #   reflector:
+    #     namespaces: ["traefik"]
+
+  config:
+    # -- To better understand stages in parsers, you can take a look at https://docs.crowdsec.net/docs/next/parsers/intro/
+    # Those files are only mounted in the agent pods
+    parsers:
+      s00-raw: {}
+      s01-parse: {}
+        # example-parser.yaml: |
+        #   filter: "evt.Line.Labels.type == 'myProgram'"
+        #   onsuccess: next_stage
+        #   ....
+      s02-enrich: {}
+    # -- to better understand how to write a scenario, you can take a look at https://docs.crowdsec.net/docs/next/scenarios/intro
+    # Those files are only mounted in the agent pods
+    scenarios: {}
+      # myScenario.yaml: |
+      #   type: trigger
+      #    name: myName/MyScenario
+      #    description: "Detect bruteforce on myService"
+      #    filter: "evt.Meta.log_type == 'auth_bf_log'"
+      #    ...
+    # -- to better understand how to write a postoverflow, you can take a look at (https://docs.crowdsec.net/docs/next/whitelist/create/#whitelist-in-postoverflows)
+    # Those files are only mounted in the agent pods
+    postoverflows:
+      s00-enrich: {}
+        # rdnsEnricher.yaml: |
+        #   ...
+      s01-whitelist: {}
+        # myRdnsWhitelist.yaml: |
+        #   ...
+
+    # -- Simulation configuration (https://docs.crowdsec.net/docs/next/scenarios/simulation/)
+    # This file is only mounted in the agent pods
+    simulation.yaml: ""
+      #  |
+      # simulation: false
+      # exclusions:
+      #  - crowdsecurity/ssh-bf
+    # This file is only mounted in the lapi pod
+    console.yaml: ""
+      #   |
+      # share_manual_decisions: true
+      # share_tainted: true
+      # share_custom: true
+    # -- Profiles configuration (https://docs.crowdsec.net/docs/next/profiles/format/#profile-configuration-example)
+    # This file is only mounted in the lapi pod
+    profiles.yaml: ""
+      #   |
+      #  name: default_ip_remediation
+      #  debug: true
+      #  filters:
+      #    - Alert.Remediation == true && Alert.GetScope() == "Ip"
+      #  ...
+
+      # -- General configuration (https://docs.crowdsec.net/docs/configuration/crowdsec_configuration/#configuration-example)
+    # This file is only mounted in the lapi pod
+    config.yaml.local: |
+      api:
+        server:
+          auto_registration: # Activate if not using TLS for authentication
+            enabled: true
+            token: "${REGISTRATION_TOKEN}" # /!\ Do not modify this variable (auto-generated and handled by the chart)
+            allowed_ranges: # /!\ Make sure to adapt to the pod IP ranges used by your cluster
+              - "127.0.0.1/32"
+              - "192.168.0.0/16"
+              - "10.0.0.0/8"
+              - "172.16.0.0/12"
+
+  secrets:
+    # When externalSecret.name is specified, lapi.secrets.csLapiSecret and
+    # lapi.secrets.registrationToken values are ignored
+    externalSecret:
+      # Name of the secret to use
+      name: "crowdsec-credentials"
+      # The key in the secret that holds the csLapiSecret. Defaults to csLapiSecret
+      csLapiSecretKey: "csLapiSecretKey"
+      # The key in the secret that holds the registrationToken. Defaults to registrationToken
+      registrationTokenKey: "registrationTokenKey"
+
+  lapi: 
+    enabled: true 
+
+    # Environment variables from crowdsecurity/crowdsec docker image
+    env:
+      # by default disable the agent because it only needs the local API.
+      #- name: DISABLE_AGENT
+      #  value: "true"
+      - name: ENROLL_KEY
+        valueFrom: 
+          secretKeyRef:
+            name: crowdsec-credentials
+            key: enrollKey
+      - name: ENROLL_INSTANCE_NAME
+        value: k3s-cluster
+      - name: ENROLL_TAGS
+        value: "k3s linux test"
+      - name: BOUNCER_KEY_traefik
+        valueFrom:
+          secretKeyRef:
+            name: crowdsec-credentials
+            key: bouncerTokenKey
+      # If it's a test, we don't want to share signals with CrowdSec so disable the Online API.
+      - name: DISABLE_ONLINE_API
+        value: "true"
+      # When testing, allow bans on private networks
+      # - name: DISABLE_PARSERS
+      #   value: "crowdsecurity/whitelists"
+
+    # Allows you to load environment variables from kubernetes secret or config map
+    # Seems to be deprecated in favor of valueFrom in env
+    # envFrom:
+    #   # - secretRef:
+    #   #     name: env-secret
+    #   # - configMapRef:
+    #   #     name: config-map
+    #   - secretRef:
+    #       name: crowdsec-bouncer-token
+
+    dashboard:
+      # -- Enable Metabase Dashboard (by default disabled)
+      enabled: false
+      # -- environment variables from metabase/metabase docker image
+      # -- see https://www.metabase.com/docs/latest/configuring-metabase/environment-variables
+      env: []
+
+    # -- Enable service monitoring (exposes "metrics" port "6060" for Prometheus)
+    metrics:
+      enabled: true
+      # -- Creates a ServiceMonitor so Prometheus will monitor this service
+      # -- Prometheus needs to be configured to watch on all namespaces for ServiceMonitors
+      # -- See the documentation: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#prometheusioscrape
+      # -- See also: https://github.com/prometheus-community/helm-charts/issues/106#issuecomment-700847774
+      serviceMonitor:
+        enabled: false
+      podMonitor:
+        enabled: false
+
+  agent:
+    enabled: true
+    # -- To add custom acquisitions using available datasources (https://docs.crowdsec.net/docs/next/data_sources/intro)
+    additionalAcquisition: []
+      # - source: kinesis
+      #   stream_name: my-stream
+      #   labels:
+      #     type: mytype
+      # - source: syslog
+      #   listen_addr: 127.0.0.1
+      #   listen_port: 4242
+      #   labels:
+      #     type: syslog
+    # -- Specify each pod you want to process it logs (namespace, podName and program)
+    acquisition:
+      #- namespace: "" #ingress-nginx
+        # -- to select pod logs to process
+      #  podName: "" #ingress-nginx-controller-*
+        # -- program name related to specific parser you will use (see https://hub.crowdsec.net/author/crowdsecurity/configurations/docker-logs)
+      #  program: "" #nginx
+        # -- If set to true, will poll the files using os.Stat instead of using inotify
+      #  poll_without_inotify: false
+      - namespace: traefik
+        podName: traefik-*
+        program: traefik
+    
+    env:
+      - name: COLLECTIONS
+        value: "crowdsecurity/traefik"
+
+
+    # -- Enable service monitoring (exposes "metrics" port "6060" for Prometheus)
+    metrics:
+      enabled: true
+      # -- Creates a ServiceMonitor so Prometheus will monitor this service
+      # -- Prometheus needs to be configured to watch on all namespaces for ServiceMonitors
+      # -- See the documentation: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#prometheusioscrape
+      # See also: https://github.com/prometheus-community/helm-charts/issues/106#issuecomment-700847774
+      serviceMonitor:
+        enabled: false
+      podMonitor:
+        enabled: false
+

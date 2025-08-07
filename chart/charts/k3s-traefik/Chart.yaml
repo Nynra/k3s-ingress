@@ -1,0 +1,10 @@
+apiVersion: v2
+name: k3s-traefik
+description: A Helm chart that deploys the Traefik ingress controller and dashboard.
+type: application
+version: 0.1.0
+dependencies:
+- name: traefik
+  version: v35.3.0
+  repository: https://helm.traefik.io/traefik
+  condition: traefik.deployment.enabled
