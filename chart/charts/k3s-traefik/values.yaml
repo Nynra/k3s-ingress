@@ -112,7 +112,12 @@ traefik:
     podAnnotations: {}
     additionalContainers: []
     initContainers: []
+    additionalVolumes:
+      - name: plugins
 
+  additionalVolumeMounts:
+    - name: plugins
+      mountPath: /plugins-storage
   volumes: 
     # Make sure to reflect the certificate in the crowdsec configuration
     - name: "{{ .Release.Name }}-bouncer-tls"
