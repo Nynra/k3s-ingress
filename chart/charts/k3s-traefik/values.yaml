@@ -97,8 +97,8 @@ traefik:
     # Enable the CrowdSec bouncer plugin
     - "--experimental.plugins.bouncer.moduleName=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
     - "--experimental.plugins.bouncer.version={{ .Values.middlewares.crowdsecBouncer.version }}"
-    - "--entrypoints.web.http.middlewares=traefik-bouncer@kubernetescrd"
-    - "--entrypoints.websecure.http.middlewares=traefik-bouncer@kubernetescrd"
+    # - "--entrypoints.web.http.middlewares=traefik-bouncer@kubernetescrd"
+    # - "--entrypoints.websecure.http.middlewares=traefik-bouncer@kubernetescrd"
     - "--providers.kubernetescrd"
 
     # Add the crowdsec bouncer
