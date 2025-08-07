@@ -20,7 +20,7 @@ spec:
       logLevel: DEBUG
       crowdsecMode: stream
       crowdsecLapiScheme: https
-      crowdsecLapiHost: "{{ .Release.Name }}-service.{{ .Release.Namespace }}:8080"
+      crowdsecLapiHost: "{{ .Release.Name }}-service:8080"
       crowdsecLapiTLSCertificateAuthorityFile: /etc/traefik/crowdsec-certs/ca.crt
       crowdsecLapiTLSCertificateBouncerFile: /etc/traefik/crowdsec-certs/tls.crt
       crowdsecLapiTLSCertificateBouncerKeyFile: /etc/traefik/crowdsec-certs/tls.key
