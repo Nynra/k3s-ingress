@@ -63,7 +63,6 @@ middlewares:
   # Enable the CrowdSec bouncer middleware
   crowdsecBouncer:
     enabled: true
-    version: "v1.4.4"
   
   # Allowlist for local IPs to bypass the CrowdSec bouncer
   localOnlyAllowlist:
@@ -96,7 +95,7 @@ traefik:
     - "--log.level=INFO"
     # Enable the CrowdSec bouncer plugin
     - "--experimental.plugins.bouncer.moduleName=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
-    - "--experimental.plugins.bouncer.version={{ .Values.middlewares.crowdsecBouncer.version }}"
+    - "--experimental.plugins.bouncer.version=v1.4.4"
     # - "--entrypoints.web.http.middlewares=traefik-bouncer@kubernetescrd"
     # - "--entrypoints.websecure.http.middlewares=traefik-bouncer@kubernetescrd"
     - "--providers.kubernetescrd"
