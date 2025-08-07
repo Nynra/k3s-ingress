@@ -23,9 +23,9 @@ crowdsec:
 
   tls:
     enabled: true
-    # bouncer:
-    #   reflector:
-    #     namespaces: ["traefik"]
+    bouncer:
+      reflector:
+        namespaces: ["traefik"]
 
   config:
     # -- To better understand stages in parsers, you can take a look at https://docs.crowdsec.net/docs/next/parsers/intro/
