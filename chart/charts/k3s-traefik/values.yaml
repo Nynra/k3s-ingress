@@ -96,13 +96,11 @@ traefik:
     # Enable the CrowdSec bouncer plugin
     - "--experimental.plugins.bouncer.moduleName=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
     - "--experimental.plugins.bouncer.version=v1.4.4"
-    # - "--entrypoints.web.http.middlewares=traefik-bouncer@kubernetescrd"
-    # - "--entrypoints.websecure.http.middlewares=traefik-bouncer@kubernetescrd"
     - "--providers.kubernetescrd"
 
-    # Add the crowdsec bouncer
-    # - "--entrypoints.web.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
-    # - "--entrypoints.websecure.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
+    # Enable the default chain middleware
+    # - "--entrypoints.web.http.middlewares=traefik-default-chain@kubernetescrd"
+    # - "--entrypoints.websecure.http.middlewares=traefik-default-chain@kubernetescrd"
 
   deployment:
     enabled: true

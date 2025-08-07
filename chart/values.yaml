@@ -153,6 +153,7 @@ k3s-traefik:
       # Name and type of the secret store where the TLS certificate is stored
       secretStore: "certs-vault"
       secretStoreType: "ClusterSecretStore"
+
   crowdsecCredentials: 
     enabled: true
 
@@ -170,18 +171,21 @@ k3s-traefik:
     # Enable the non-default middlewares for Traefik
     enabled: true
 
-    # Annotations and labels to add to the middlewares
-    commonAnnotations: {}
-    commonLabels: {}
+    # Forwardauth middleware
+    autheliaForwardAuth:
+      enabled: true
+      inDefaultChain: true
 
     # Enable the CrowdSec bouncer middleware
     crowdsecBouncer:
       enabled: true
       version: "v1.4.4"
+      inDefaultChain: true
     
     # Allowlist for local IPs to bypass the CrowdSec bouncer
     localOnlyAllowlist:
       enabled: true
+      inDefaultChain: true
       # Allowed local IP CIDRs
       localIpCIDRs:
         # Can also be restricted to certain subnets
@@ -190,6 +194,7 @@ k3s-traefik:
     # Rate limiting middleware
     rateLimiting:
       enabled: true
+      inDefaultChain: true
       average: 100
       burst: 200
       period: 1s
