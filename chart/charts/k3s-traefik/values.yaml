@@ -59,21 +59,24 @@ middlewares:
   # Enable the CrowdSec bouncer middleware
   crowdsecBouncer:
     enabled: true
+    inDefaultChain: true
   
   # Allowlist for local IPs to bypass the CrowdSec bouncer
   localOnlyAllowlist:
     # Enable the local IP allowlist middleware
     enabled: true
+    inDefaultChain: false
 
-  # Allowed local IP CIDRs
-  localIpCIDRs:
-    # Can also be restricted to certain subnets
-    - 192.168.0.0/16 # 192.168.x.x
+    # Allowed local IP CIDRs
+    localIpCIDRs:
+      # Can also be restricted to certain subnets
+      - 192.168.0.0/16 # 192.168.x.x
 
   # Rate limiting middleware
   rateLimiting:
     # Enable the rate limiting middleware
     enabled: true
+    inDefaultChain: true
 
     # Specify the rate limiting parameters
     average: 100
