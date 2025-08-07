@@ -19,6 +19,10 @@ dashboard:
   # The URL to access the dashboard
   ingressUrl: "traefik.example.com"
 
+  middlewares:
+    - name: traefik-default-chain 
+      namespace: traefik
+
   # The secret name for the TLS certificate used by the dashboard ingress
   entrypoint: websecure
   externalCert:
