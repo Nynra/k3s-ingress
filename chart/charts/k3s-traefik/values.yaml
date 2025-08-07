@@ -102,8 +102,8 @@ traefik:
     - "--providers.kubernetescrd"
 
     # Enable the default chain middleware
-    # - "--entrypoints.web.http.middlewares=traefik-default-chain@kubernetescrd"
-    # - "--entrypoints.websecure.http.middlewares=traefik-default-chain@kubernetescrd"
+    - "--entrypoints.web.http.middlewares=traefik-default-chain@kubernetescrd"
+    - "--entrypoints.websecure.http.middlewares=traefik-default-chain@kubernetescrd"
 
   deployment:
     enabled: true
