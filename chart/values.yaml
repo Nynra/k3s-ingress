@@ -133,95 +133,95 @@ k3s-crowdsec:
         podMonitor:
           enabled: false
 
-  k3s-traefik:
+k3s-traefik:
+  enabled: true
+  dashboard:
+    # Enable the Traefik dashboard
     enabled: true
-    dashboard:
-      # Enable the Traefik dashboard
+
+    # The URL to access the dashboard
+    ingressUrl: "traefik.example.com"
+
+    # The secret name for the TLS certificate used by the dashboard ingress
+    entrypoint: websecure
+    externalCert:
       enabled: true
 
-      # The URL to access the dashboard
-      ingressUrl: "traefik.example.com"
-
-      # The secret name for the TLS certificate used by the dashboard ingress
-      entrypoint: websecure
-      externalCert:
-        enabled: true
-
-        # The name of the secret in the secret store that contains the TLS certificate
-        secretName: "example-com-tls"
-
-        # Name and type of the secret store where the TLS certificate is stored
-        secretStore: "certs-vault"
-        secretStoreType: "ClusterSecretStore"
-    crowdsecCredentials: 
-      enabled: true
-
-      # Name of the secret in the external storage
-      secretName: "crowdsecCredentials"
+      # The name of the secret in the secret store that contains the TLS certificate
+      secretName: "example-com-tls"
 
       # Name and type of the secret store where the TLS certificate is stored
-      secretStore: "kubernetes"
+      secretStore: "certs-vault"
       secretStoreType: "ClusterSecretStore"
+  crowdsecCredentials: 
+    enabled: true
 
-      properties:
-        bouncerToken: ""
+    # Name of the secret in the external storage
+    secretName: "crowdsecCredentials"
 
-    middlewares:
-      # Enable the non-default middlewares for Traefik
+    # Name and type of the secret store where the TLS certificate is stored
+    secretStore: "kubernetes"
+    secretStoreType: "ClusterSecretStore"
+
+    properties:
+      bouncerToken: ""
+
+  middlewares:
+    # Enable the non-default middlewares for Traefik
+    enabled: true
+
+    # Annotations and labels to add to the middlewares
+    commonAnnotations: {}
+    commonLabels: {}
+
+    # Enable the CrowdSec bouncer middleware
+    crowdsecBouncer:
       enabled: true
+      version: "v1.4.4"
+    
+    # Allowlist for local IPs to bypass the CrowdSec bouncer
+    localOnlyAllowlist:
+      enabled: true
+      # Allowed local IP CIDRs
+      localIpCIDRs:
+        # Can also be restricted to certain subnets
+        - 192.168.0.0/16 # 192.168.x.x
 
-      # Annotations and labels to add to the middlewares
-      commonAnnotations: {}
-      commonLabels: {}
+    # Rate limiting middleware
+    rateLimiting:
+      enabled: true
+      average: 100
+      burst: 200
+      period: 1s
 
-      # Enable the CrowdSec bouncer middleware
-      crowdsecBouncer:
+  traefik:
+    deployment:
+      enabled: true
+    providers:
+      kubernetesCRD:
         enabled: true
-        version: "v1.4.4"
-      
-      # Allowlist for local IPs to bypass the CrowdSec bouncer
-      localOnlyAllowlist:
+        ingressClass: traefik-external
+        # -- Allows to reference ExternalName services in IngressRoute
+        allowExternalNameServices: true
+        # -- Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
+        namespaces: [] # All namespaces
+        # Might be needed to reference middlewares in other namespaces
+        # allowCrossNamespace: true
+      kubernetesIngress:
         enabled: true
-        # Allowed local IP CIDRs
-        localIpCIDRs:
-          # Can also be restricted to certain subnets
-          - 192.168.0.0/16 # 192.168.x.x
+        allowExternalNameServices: true
+        namespaces: [] # All namespaces
+        publishedService:
+          enabled: false
 
-      # Rate limiting middleware
-      rateLimiting:
-        enabled: true
-        average: 100
-        burst: 200
-        period: 1s
+    service:
+      enabled: true
+      spec:
+        loadBalancerIP: 192.168.0.50
 
-    traefik:
-      deployment:
-        enabled: true
-      providers:
-        kubernetesCRD:
-          enabled: true
-          ingressClass: traefik-external
-          # -- Allows to reference ExternalName services in IngressRoute
-          allowExternalNameServices: true
-          # -- Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
-          namespaces: [] # All namespaces
-          # Might be needed to reference middlewares in other namespaces
-          # allowCrossNamespace: true
-        kubernetesIngress:
-          enabled: true
-          allowExternalNameServices: true
-          namespaces: [] # All namespaces
-          publishedService:
-            enabled: false
-
-      service:
-        enabled: true
-        spec:
-          loadBalancerIP: 192.168.0.50
-
-      metrics:
-        prometheus:
-          serviceMonitor:
-            enabled: false
-          prometheusRule:
-            enabled: false
+    metrics:
+      prometheus:
+        serviceMonitor:
+          enabled: false
+        prometheusRule:
+          enabled: false
