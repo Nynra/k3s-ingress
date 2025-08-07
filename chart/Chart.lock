@@ -1,9 +1,9 @@
 dependencies:
-- name: k3s-traefik
-  repository: file://./charts/k3s-traefik
-  version: 0.1.0
 - name: k3s-crowdsec
   repository: file://./charts/k3s-crowdsec
   version: 0.1.0
-digest: sha256:75d9321078ae3b0c7a8957d26c619a168dd6c60f03c5ba860289221a4ce83580
-generated: "2025-08-07T14:04:05.383574617+02:00"
+- name: k3s-traefik
+  repository: file://./charts/k3s-traefik
+  version: 0.1.0
+digest: sha256:08ae9c86a721e206d5ba41e440417391d4c878521017a4817b3e4181ec7242db
+generated: "2025-08-07T16:58:15.535685605+02:00"

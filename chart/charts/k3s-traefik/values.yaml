@@ -119,7 +119,7 @@ traefik:
       mountPath: /plugins-storage
   volumes: 
     # Make sure to reflect the certificate in the crowdsec configuration
-    - name: "crowdsec-bouncer-tls"
+    - name: "{{ .Release.Name }}-bouncer-tls"
       mountPath: /etc/traefik/crowdsec-certs/
       type: secret
 
