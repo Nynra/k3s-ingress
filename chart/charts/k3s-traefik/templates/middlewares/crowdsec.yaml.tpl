@@ -1,4 +1,4 @@
-{{- if .Values.enabled }}{{- if .Values.middlewares.enabled }}{{- if .Values.middlewares.bouncer.enabled }}
+{{- if .Values.enabled }}{{- if .Values.middlewares.enabled }}{{- if .Values.middlewares.crowdsecBouncer.enabled }}
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
