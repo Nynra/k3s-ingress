@@ -176,7 +176,7 @@ k3s-traefik:
 
     # Forwardauth middleware
     autheliaForwardAuth:
-      enabled: true
+      enabled: false
       inDefaultChain: true
 
     # Authentik forwardauth middleware
