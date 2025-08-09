@@ -20,7 +20,7 @@ spec:
   chain:
     middlewares:
     {{- range .middlewares }}
-    - name: {{ .name }}
+    - name: {{ . }}
     {{- end }}
 {{- end }}
 {{- end }}{{- end }}
