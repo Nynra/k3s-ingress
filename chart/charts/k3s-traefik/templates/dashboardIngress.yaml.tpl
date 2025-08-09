@@ -6,6 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   annotations:
     kubernetes.io/ingress.class: traefik-external
+    argocd.argoproj.io/sync-wave: "3"
     # Global annotations
     {{- if .Values.global.commonAnnotations }}
     {{- toYaml .Values.global.commonAnnotations | nindent 4 }}

@@ -5,7 +5,7 @@ metadata:
   name: traefik-default-chain
   namespace: {{ .Release.Namespace | quote }}
   annotations:
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "2"
     # Global annotations
     {{- if $.Values.global.commonAnnotations }}
     {{- toYaml $.Values.global.commonAnnotations | nindent 4 }}
