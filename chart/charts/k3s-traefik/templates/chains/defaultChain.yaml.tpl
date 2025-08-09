@@ -20,3 +20,6 @@ spec:
     {{- if .Values.middlewares.autheliaForwardAuth.enabled }}{{- if .Values.middlewares.autheliaForwardAuth.inDefaultChain }}
     - name: authelia-forward-auth
     {{- end }}{{- end }}
+    {{- if .Values.middlewares.authentikForwardAuth.enabled }}{{- if .Values.middlewares.authentikForwardAuth.inDefaultChain }}
+    - name: authentik-forward-auth
+    {{- end }}{{- end }}

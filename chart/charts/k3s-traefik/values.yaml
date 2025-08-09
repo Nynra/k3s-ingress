@@ -64,7 +64,21 @@ middlewares:
   crowdsecBouncer:
     enabled: true
     inDefaultChain: true
-  
+
+  # Authentik forwardauth middleware
+  authentikForwardAuth:
+    # Enable the Authentik forwardauth middleware
+    enabled: true
+    inDefaultChain: false
+    url: https://example.com/outpost.goauthentik.io/auth/traefik
+
+  # Authelia forwardauth middleware
+  autheliaForwardAuth:
+    # Enable the Authelia forwardauth middleware
+    enabled: true
+    inDefaultChain: false
+    url: https://authelia.example.com/api/verify?rd=https://example.com
+
   # Allowlist for local IPs to bypass the CrowdSec bouncer
   localOnlyAllowlist:
     # Enable the local IP allowlist middleware
