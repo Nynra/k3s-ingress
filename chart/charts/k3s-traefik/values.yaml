@@ -75,7 +75,7 @@ middlewares:
   # Authelia forwardauth middleware
   autheliaForwardAuth:
     # Enable the Authelia forwardauth middleware
-    enabled: true
+    enabled: false
     inDefaultChain: false
     url: https://authelia.example.com/api/verify?rd=https://example.com
 
