@@ -1,4 +1,5 @@
-{{- if .Values.enabled -}}{{- if .Values.middlewares.enabled }}{{- range .Values.middlewares.chains }}
+{{- if .Values.enabled -}}{{- if .Values.middlewares.enabled }}
+{{- range .Values.middlewares.chains }}
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
@@ -21,4 +22,5 @@ spec:
     {{- range .middlewares }}
     - name: {{ .name }}
     {{- end }}
-{{- end }}{{- end }}{{- end }}
+{{- end }}
+{{- end }}{{- end }}
