@@ -1,4 +1,4 @@
-{{- if .Values.enabled }}{{- if .Values.middlewares.authentikForwardAuth.enabled }}
+{{- if .Values.enabled }}{{- if .Values.middlewares.enabled }}{{- if .Values.middlewares.authentikForwardAuth.enabled }}
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
@@ -6,6 +6,15 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   annotations:
     argocd.argoproj.io/sync-wave: "1"
+    # Global annotations
+    {{- if $.Values.global.commonAnnotations }}
+    {{- toYaml $.Values.global.commonAnnotations | nindent 4 }}
+    {{- end }}
+  {{- if $.Values.global.commonLabels }}
+  labels:
+    # Global labels
+    {{- toYaml $.Values.global.commonLabels | nindent 4 }}
+  {{- end }}
 spec:
   forwardAuth:
     address: {{ .Values.middlewares.authentikForwardAuth.url | quote }}
@@ -22,4 +31,4 @@ spec:
       - X-authentik-meta-provider
       - X-authentik-meta-app
       - X-authentik-meta-version
-{{- end }}{{- end }}
+{{- end }}{{- end }}{{- end }}

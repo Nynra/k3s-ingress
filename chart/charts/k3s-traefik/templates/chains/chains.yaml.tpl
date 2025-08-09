@@ -1,8 +1,9 @@
-{{- if .Values.enabled }}{{- if .Values.middlewares.enabled }}{{- if .Values.middlewares.localOnlyAllowlist.enabled }}
+{{- if .Values.enabled -}}{{- if .Values.middlewares.enabled }}{{- range .Values.middlewares.chains }}
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: lan-only
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace | quote }}
   annotations:
     argocd.argoproj.io/sync-wave: "1"
     # Global annotations
@@ -15,9 +16,9 @@ metadata:
     {{- toYaml $.Values.global.commonLabels | nindent 4 }}
   {{- end }}
 spec:
-  ipWhiteList:
-    sourceRange:
-      {{- range .Values.middlewares.localOnlyAllowlist.localIpCIDRs }}
-      - "{{ . }}"
-      {{- end }}
+  chain:
+    middlewares:
+    {{- range .middlewares }}
+    - name: {{ .name }}
+    {{- end }}
 {{- end }}{{- end }}{{- end }}

@@ -101,6 +101,19 @@ middlewares:
     burst: 200
     period: 1s
 
+  chains:
+    - name: chain-no-auth
+      middlewares:
+        - ratelimit 
+        - redirect-to-https
+        - bouncer
+        - default-headers
+    - name: chain-no-auth-no-bouncer
+      middlewares:
+        - ratelimit 
+        - redirect-to-https
+        - default-headers
+
 # Values for Traefik Helm chart
 traefik:
   globalArguments:
