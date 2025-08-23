@@ -39,8 +39,6 @@ metadata:
     # Global labels
     {{- toYaml .Values.global.commonLabels | nindent 4 }}
   {{- end }}
-data:
-  key: {{ .Values.crowdsecCredentials.reflectedSecret.originSecretName | quote }}
 ---
 {{ end }}
 
