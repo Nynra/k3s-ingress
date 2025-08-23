@@ -6,4 +6,4 @@ dependencies:
   repository: file://./charts/k3s-traefik
   version: 0.1.0
 digest: sha256:08ae9c86a721e206d5ba41e440417391d4c878521017a4817b3e4181ec7242db
-generated: "2025-08-07T16:58:15.535685605+02:00"
+generated: "2025-08-23T21:51:21.388009631+02:00"

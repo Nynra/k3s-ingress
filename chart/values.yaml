@@ -4,16 +4,10 @@ global:
 
 k3s-crowdsec:
   enabled: true
-  externalSecret:
+  reflectedSecret:
     enabled: true
-    secretStore: "kubernetes"
-    secretStoreType: "ClusterSecretStore"
-    secretName: ""
-    properties:
-      csLapiSecret: "" 
-      registrationToken: ""
-      bouncerToken: ""
-      enrollKey: ""
+    originNamespace: "external-secrets"
+    originSecretName: "crowdsec-credentials"
 
   crowdsec: 
     config:
@@ -147,28 +141,17 @@ k3s-traefik:
 
     # The secret name for the TLS certificate used by the dashboard ingress
     entrypoint: websecure
-    externalCert:
-      enabled: true
-
-      # The name of the secret in the secret store that contains the TLS certificate
-      secretName: "example-com-tls"
-
-      # Name and type of the secret store where the TLS certificate is stored
-      secretStore: "certs-vault"
-      secretStoreType: "ClusterSecretStore"
+    cert:
+      reflectedSecret:
+        enabled: true
+        originNamespace: "secret-namespace"
+        originSecretName: "example-com-tls"
 
   crowdsecCredentials: 
-    enabled: true
-
-    # Name of the secret in the external storage
-    secretName: "crowdsecCredentials"
-
-    # Name and type of the secret store where the TLS certificate is stored
-    secretStore: "kubernetes"
-    secretStoreType: "ClusterSecretStore"
-
-    properties:
-      bouncerToken: ""
+    reflectedSecret:
+      enabled: true
+      originNamespace: "secret-namespace"
+      originSecretName: "crowdsec-credentials"
 
   middlewares:
     # Enable the non-default middlewares for Traefik

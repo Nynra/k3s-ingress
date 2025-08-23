@@ -5,7 +5,7 @@ global:
 enabled: true
 
 externalSecret:
-  enabled: true
+  enabled: false
   secretStore: "kubernetes"
   secretStoreType: "ClusterSecretStore"
   secretName: ""
@@ -14,6 +14,11 @@ externalSecret:
     registrationToken: ""
     bouncerToken: ""
     enrollKey: ""
+
+reflectedSecret:
+  enabled: true
+  originNamespace: "external-secrets"
+  originSecretName: "crowdsec-credentials"
 
 # Values for the CrowdSec chart
 crowdsec:
