@@ -25,36 +25,33 @@ dashboard:
 
   # The secret name for the TLS certificate used by the dashboard ingress
   entrypoint: websecure
-  externalCert:
-    # Enable the use of an external secret for the TLS certificate. If set to
-    # false the chart will assume a certificate with the certName is already in the 
-    # namespace
-    enabled: true
+  cert:
+    externalSecret:
+      enabled: false
+      # The name of the secret in the secret store that contains the TLS certificate
+      secretName: "example-com-tls"
+      # Name and type of the secret store where the TLS certificate is stored
+      secretStore: "certs-vault"
+      secretStoreType: "ClusterSecretStore"
+    reflectedSecret:
+      enabled: true
+      originNamespace: "external-secrets"
+      originSecretName: "example-com-tls"
 
-    # The name of the secret in the secret store that contains the TLS certificate
-    secretName: "example-com-tls"
-
-    # Name and type of the secret store where the TLS certificate is stored
-    secretStore: "certs-vault"
-    secretStoreType: "ClusterSecretStore"
 
 crowdsecCredentials: 
-  # Enable the use of an external secret for CrowdSec credentials
-  # If set to false, the chart will assume a secret with the name secretName is
-  # already in the namespace
-  # and the values lapi.secrets.csLapiSecret and lapi.secrets.registrationToken
-  # will be used to create the secret
-  enabled: true
-
-  # Name of the secret in the external storage
-  secretName: "crowdsecCredentials"
-
-  # Name and type of the secret store where the TLS certificate is stored
-  secretStore: "kubernetes"
-  secretStoreType: "ClusterSecretStore"
-
-  properties:
-    bouncerToken: ""
+  externalSecret:
+    enabled: false
+    # Name of the secret in the external storage
+    secretName: "crowdsecCredentials"
+    # Name and type of the secret store where the TLS certificate is stored
+    secretStore: "kubernetes"
+    secretStoreType: "ClusterSecretStore"
+    bouncerTokenField: ""
+  reflectedSecret:
+    enabled: true
+    originNamespace: "external-secrets"
+    originSecretName: "crowdsecCredentials"
 
 middlewares:
   # Enable the non-default middlewares for Traefik
@@ -133,7 +130,7 @@ traefik:
     # - "--entrypoints.websecure.http.middlewares=traefik-default-chain@kubernetescrd"
 
   deployment:
-    enabled: true
+    enabled: false
     replicas: 3
     annotations: {}
     podAnnotations: {}
