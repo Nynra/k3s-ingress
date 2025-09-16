@@ -1,5 +1,6 @@
 {{- if .Values.enabled -}}{{- if .Values.middlewares.enabled }}
 {{- range .Values.middlewares.chains }}
+---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
